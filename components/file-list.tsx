@@ -13,13 +13,12 @@ import {
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { getAllFiles, deleteFile, renameFile, FileData } from '@/lib/db';
-import { useToast } from '@/components/ui/use-toast';
+import { toast} from "react-toastify";
 
 export function FileList({ onFileChange }: { onFileChange?: () => void }) {
   const [files, setFiles] = useState<FileData[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newName, setNewName] = useState('');
-  const { toast } = useToast();
 
   const loadFiles = async () => {
     const files = await getAllFiles();
@@ -35,16 +34,9 @@ export function FileList({ onFileChange }: { onFileChange?: () => void }) {
       await deleteFile(id);
       await loadFiles();
       onFileChange?.();
-      toast({
-        title: 'Success',
-        description: 'File deleted successfully',
-      });
+      toast.success("File deleted successfully");
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to delete file',
-        variant: 'destructive',
-      });
+      toast.error("Failed to delete file")
     }
   };
 
@@ -56,16 +48,9 @@ export function FileList({ onFileChange }: { onFileChange?: () => void }) {
       setEditingId(null);
       setNewName('');
       onFileChange?.();
-      toast({
-        title: 'Success',
-        description: 'File renamed successfully',
-      });
+      toast.success("File renamed successfully")
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to rename file',
-        variant: 'destructive',
-      });
+      toast.error("Failed to rename file")
     }
   };
 

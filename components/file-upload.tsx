@@ -3,15 +3,13 @@
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { saveFile } from '@/lib/db';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'react-toastify';
 
 export function FileUpload({ onUploadComplete }: { onUploadComplete?: () => void }) {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const { toast } = useToast();
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     setUploading(true);
@@ -23,19 +21,19 @@ export function FileUpload({ onUploadComplete }: { onUploadComplete?: () => void
         await saveFile(file);
         setProgress(((i + 1) / acceptedFiles.length) * 100);
       }
-
-      toast({
-        title: 'Success',
-        description: `${acceptedFiles.length} file(s) uploaded successfully`,
-      });
+      toast.success(`${acceptedFiles.length} file(s) uploaded successfully`)
+      // toast({
+      //   title: 'Success',
+      //   description: `${acceptedFiles.length} file(s) uploaded successfully`,
+      // });
 
       onUploadComplete?.();
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to upload files',
-        variant: 'destructive',
-      });
+      // toast({
+      //   title: 'Error',
+      //   description: 'Failed to upload files',
+      //   variant: 'destructive',
+      // });
     } finally {
       setUploading(false);
       setProgress(0);

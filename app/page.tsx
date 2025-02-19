@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 export default function Home() {
   return (
-    <div className="container mx-auto space-y-12">
+    <div className="container mx-auto pt-16 space-y-12">
       {/* Hero Section */}
       <div className="text-center space-y-6">
         <h1 className="text-6xl font-bold">
@@ -26,10 +26,10 @@ export default function Home() {
       </div>
 
       {/* Features Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="px-2 grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Panic Notes Card */}
         <Link href="/panic-notes" className="group">
-          <div className="bg-pink-500 rounded-2xl p-8 h-80 flex flex-col items-center justify-center text-white transition-transform duration-300 group-hover:scale-105">
+          <div className="bg-pink-500 rounded-2xl p-2 h-80 flex flex-col items-center justify-center text-white transition-transform duration-300 group-hover:scale-105">
             <FileText className="w-16 h-16 mb-4" />
             <h3 className="text-2xl font-semibold text-center">
               Generate Your Panic Notes
@@ -39,7 +39,7 @@ export default function Home() {
 
         {/* CramBot Card */}
         <Link href="/crambot" className="group">
-          <div className="bg-purple-500 rounded-2xl p-8 h-80 flex flex-col items-center justify-center text-white transition-transform duration-300 group-hover:scale-105">
+          <div className="bg-purple-500 rounded-2xl p-2 h-80 flex flex-col items-center justify-center text-white transition-transform duration-300 group-hover:scale-105">
             <Bot className="w-16 h-16 mb-4" />
             <h3 className="text-2xl font-semibold text-center">
               Ask CramBot Anything
@@ -49,7 +49,7 @@ export default function Home() {
 
         {/* Quizzard Card */}
         <Link href="/quizzard" className="group">
-          <div className="bg-purple-500 rounded-2xl p-8 h-80 flex flex-col items-center justify-center text-white transition-transform duration-300 group-hover:scale-105">
+          <div className="bg-purple-500 rounded-2xl p-2 h-80 flex flex-col items-center justify-center text-white transition-transform duration-300 group-hover:scale-105">
             <Brain className="w-16 h-16 mb-4" />
             <h3 className="text-2xl font-semibold text-center">Quizzard</h3>
           </div>

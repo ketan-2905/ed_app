@@ -2,8 +2,9 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Providers } from './providers';
-import { Toaster } from '@/components/ui/toaster';
-import { ThemeToggle } from '@/components/theme-toggle';
+import SideBar from '@/components/shared/Navagation/SideBar';
+import { ToastContainer} from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -23,38 +24,21 @@ export default function RootLayout({
         <Providers>
           <div className="flex min-h-screen">
             {/* Sidebar */}
-            <nav className="w-64 bg-card/50 p-4 space-y-4">
-              <div className="flex items-center space-x-2 mb-8">
-                <span className="font-bold text-lg">Menu</span>
-              </div>
-              <div className="space-y-2">
-                <a href="/" className="flex items-center space-x-2 p-2 rounded-lg hover:bg-accent transition-colors">
-                  <span>Home</span>
-                </a>
-                <a href="/upload" className="flex items-center space-x-2 p-2 rounded-lg hover:bg-accent transition-colors">
-                  <span>Upload Files</span>
-                </a>
-                <a href="/panic-notes" className="flex items-center space-x-2 p-2 rounded-lg hover:bg-accent transition-colors">
-                  <span>Panic Notes</span>
-                </a>
-                <a href="/crambot" className="flex items-center space-x-2 p-2 rounded-lg hover:bg-accent transition-colors">
-                  <span>CramBot</span>
-                </a>
-                <a href="/quizzard" className="flex items-center space-x-2 p-2 rounded-lg hover:bg-accent transition-colors">
-                  <span>Quizzard</span>
-                </a>
-              </div>
-            </nav>
-
+            <SideBar />
             {/* Main Content */}
-            <main className="flex-1 p-8">
-              <div className="flex justify-end mb-4">
-                <ThemeToggle />
+            <main className="flex-1 px-2 custom-scrollbar overflow-y-auto max-h-screen">
+              <div className="flex justify-end">
               </div>
               {children}
             </main>
           </div>
-          <Toaster />
+          <ToastContainer 
+        position="bottom-right" 
+        theme="dark"
+        autoClose={3000}
+        hideProgressBar={true}
+        limit={2}
+      />
         </Providers>
       </body>
     </html>
