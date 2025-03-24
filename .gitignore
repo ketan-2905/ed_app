@@ -8,6 +8,7 @@ frontend/.next/
 backend/.venv/
 backend/__pycache__/
 backend/*.pyc
+backend/uploaded_files/
 
 # OS-specific
 .DS_Store
