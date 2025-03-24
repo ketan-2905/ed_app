@@ -1,0 +1,16 @@
+# Root-level .gitignore
+
+# Node.js (Frontend)
+frontend/node_modules/
+frontend/.next/
+
+# Python (Backend)
+backend/.venv/
+backend/__pycache__/
+backend/*.pyc
+
+# OS-specific
+.DS_Store
+
+# Other
+*.log
