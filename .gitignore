@@ -9,6 +9,7 @@ backend/.venv/
 backend/__pycache__/
 backend/*.pyc
 backend/uploaded_files/
+backend/static/
 
 # OS-specific
 .DS_Store
