@@ -11,6 +11,10 @@ from content_processor.summarizer import summarize_content
 from export_handler import export_images_and_text_to_docx, export_tables_to_docx
 from flask_cors import CORS
 from dotenv import load_dotenv
+import chromadb
+from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
+import tiktoken
+from typing import List
 
 app = Flask(__name__)
 CORS(app)
@@ -21,6 +25,10 @@ STATIC_DIR = os.path.join(os.getcwd(), "static")
 UPLOAD_FOLDER = os.path.join(STATIC_DIR, "uploads")
 OUTPUT_FOLDER = os.path.join(STATIC_DIR, "outputs")
 ALLOWED_EXTENSIONS = {"pdf", "docx", "pptx"}
+
+CHROMA_DB_PATH = "chroma_sessions"
+chroma_client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
+embedding_function = DefaultEmbeddingFunction()
 
 # Create necessary directories
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -102,50 +110,76 @@ def parse_mcq_output(mcq_text):
         question["correctAnswer"] = correct_answers.get(question["id"], 0)
     return questions
 
-def query_gemini(document_text, user_query):
-    """Queries Gemini API with the document text and user query."""
-    prompt = f"""
-    Your task is to generate an output message in HTML format that is clean, visually appealing, and ready for direct integration into a React component. The message must follow these styling and structuring guidelines meticulously:
 
-    1. **Overall Structure & Readability**
-       - The output should be well-organized with clear sections and natural breaks.
-       - Use HTML tags to divide content into paragraphs, headers, lists, and code blocks to enhance readability.
+def semantic_chunk(text: str, chunk_size: int = 512, overlap: int = 50) -> List[str]:
+    """Context-aware text chunking"""
+    enc = tiktoken.get_encoding("cl100k_base")
+    paragraphs = re.split(r'\n\s*\n', text.strip())
+    chunks = []
+    current_chunk = []
+    current_length = 0
 
-    2. **Tailwind CSS Styling**
-       - **Paragraphs:** Wrap all paragraphs with:
-         <p class='text-sm text-gray-800 leading-relaxed'> ... </p>
-       - **Bold Text:** For any text that needs emphasis, use:
-         <b class='font-semibold'> ... </b>
-       - **Italic Text:** For additional emphasis or styling, use:
-         <i class='italic text-gray-600'> ... </i>
-       - **Lists:** When creating bullet lists, use:
-         <ul class='list-disc pl-5'> 
-           <li class='mb-1'> ... </li> 
-         </ul>
-       - **Line Breaks:** Use <br> tags where natural pauses or separations are needed.
-       - **Headers:** Enhance structure with headers:
-         - Main Title: <h1 class='text-xl font-bold text-gray-900'> ... </h1>
-         - Subheadings: <h2 class='text-lg font-semibold text-gray-800'> ... </h2>
-       - **Code Blocks:** For technical or code-specific content, wrap the content in:
-         <pre class='bg-gray-100 p-3 rounded text-sm'> ... </pre>
+    for paragraph in paragraphs:
+        paragraph_tokens = enc.encode(paragraph)
+        paragraph_length = len(paragraph_tokens)
 
-    4. **Content and Integration Requirements**
-       - Ensure that the final output is engaging, well-structured, and styled according to the instructions.
-       - The generated HTML should be easily integrable within a React component rendering dynamic HTML content.
-       - Maintain clarity and simplicity while ensuring that all required styles and formatting are applied.
-
-    - **User Query:**  {user_query}.
-    - **Document Context:** {document_text}.
-    """
-    model = genai.GenerativeModel("gemini-1.5-flash")
-    response = model.generate_content(prompt)
-    try:
-        return response.text
-    except ValueError as e:
-        if "finish_reason" in str(e):
-            return "Content cannot be generated due to copyright restrictions."
+        if paragraph_length > chunk_size:
+            sentences = re.split(r'(?<=[.!?])\s+|(?<=\n)\s*', paragraph)
+            for sentence in sentences:
+                sentence_tokens = enc.encode(sentence)
+                sentence_length = len(sentence_tokens)
+                if current_length + sentence_length > chunk_size:
+                    chunks.append(enc.decode(current_chunk))
+                    current_chunk = current_chunk[-overlap:] if overlap else []
+                    current_length = len(current_chunk)
+                current_chunk.extend(sentence_tokens)
+                current_length += sentence_length
         else:
-            raise
+            if current_length + paragraph_length > chunk_size:
+                chunks.append(enc.decode(current_chunk))
+                current_chunk = current_chunk[-overlap:] if overlap else []
+                current_length = len(current_chunk)
+            current_chunk.extend(paragraph_tokens)
+            current_length += paragraph_length
+
+    if current_chunk:
+        chunks.append(enc.decode(current_chunk))
+    return chunks
+
+
+def query_gemini(document_text, user_query):
+    """RAG-enhanced query using ChromaDB"""
+    session_id = document_text  # Using document_text as session identifier
+    try:
+        collection = chroma_client.get_collection(name="document_chunks")
+        
+        # Retrieve relevant chunks
+        results = collection.query(
+            query_texts=[user_query],
+            n_results=5,
+            where={"session_id": session_id}
+        )
+
+        # Build context from retrieved chunks
+        context = "\n\n".join(results['documents'][0])
+
+        # Generate response
+        prompt = f"""Analyze this context and answer the query:
+        
+        Context:
+        {context}
+        
+        Query: {user_query}
+        
+        Provide a comprehensive answer in HTML format as specified in previous instructions."""
+        
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        response = model.generate_content(prompt)
+        return response.text
+        
+    except Exception as e:
+        return f"Error generating response: {str(e)}"
+
 
 def generate_quiz(document_text, topic, difficulty, num_questions):
     """Generate MCQ quiz using Gemini API."""
@@ -234,7 +268,27 @@ def upload_files():
     new_text = extract_from_files(new_file_paths) if new_file_paths else ""
     if new_text:
         sessions[session_id]["text_content"] += ("\n" + new_text if sessions[session_id]["text_content"] else new_text)
-    
+        
+        # Process and store chunks in ChromaDB
+        try:
+            collection = chroma_client.get_or_create_collection(name="document_chunks")
+            
+            # Delete existing chunks for this session
+            collection.delete(where={"session_id": session_id})
+            
+            # Process and store new chunks
+            chunks = semantic_chunk(new_text)
+            chunk_ids = [f"{session_id}_{i}" for i in range(len(chunks))]
+            metadatas = [{"session_id": session_id} for _ in chunks]
+            
+            collection.upsert(
+                ids=chunk_ids,
+                documents=chunks,
+                metadatas=metadatas
+            )
+        except Exception as e:
+            print(f"Error storing chunks: {str(e)}")
+
     return make_response(jsonify({
         "session_id": session_id,
         "message": "Files uploaded and processed successfully",
@@ -441,6 +495,12 @@ def logout():
             print(f"Deleted output directory: {output_dir}")
         except Exception as e:
             print(f"Error deleting output directory {output_dir}: {e}")
+    try:
+        collection = chroma_client.get_collection("document_chunks")
+        collection.delete(where={"session_id": session_id})
+    except Exception as e:
+        print(f"Error deleting ChromaDB entries: {str(e)}")
+    
     # Delete any quizzes associated with this session
     quiz_ids_to_delete = []
     for quiz_id, quiz_data in quizzes.items():

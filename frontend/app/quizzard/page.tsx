@@ -30,12 +30,12 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import QuizGenerator from "@/components/QuizGenerator";
-import { dummyQuiz } from "@/lib/dummy";
 import { useUpload } from "@/context/UploadContext";
 import EmptyState from "@/components/shared/EmptyState";
 import { generateQuiz } from "@/lib/api";
 
 import Loader from "@/components/shared/QuizLoader";
+import { useRouter } from 'next/router';
 
 
 // Custom tooltip with improved styling
@@ -106,26 +106,6 @@ export default function QuizPage() {
   const { sessionId } = useUpload();
   const [isGenerating, setIsGenerating] = useState(false)
   const {theme} = useTheme()
-
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      // This line is necessary for some browsers to show the dialog
-      e.returnValue = 'Are you sure you want to leave this page? Unsaved changes may be lost.';
-    };
-
-    if(quizState.length){
-      // Add the event listener
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    // Cleanup the event listener when component unmounts
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    }
-    }else{
-      return
-    }
-  }, []);
 
   // Timer effect
   useEffect(() => {

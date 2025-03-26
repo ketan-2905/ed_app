@@ -138,9 +138,6 @@ export const logoutUser = async (sessionId: string): Promise<void> => {
   if (!sessionId) {
     throw new Error("Session ID is required.");
   }
-
-  alert("Logout")
-
   try {
     const response = await apiClient.post("/logout", {
       session_id: sessionId,

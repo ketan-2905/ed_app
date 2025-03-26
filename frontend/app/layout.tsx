@@ -7,7 +7,10 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { UploadProvider } from "@/context/UploadContext";
 import { ChatProvider } from "@/context/ChatContext";
-import SessionWarning from "@/components/SessionWarning";
+import UsePageUnloadHandler from "@/components/RouteSessionWarning";
+import { PanicNotesProvider } from "@/context/PanicNotesContext";
+import usePageUnloadHandler from "@/hooks/usePageUnloadHandler";
+import RouteSessionWarning from "@/components/RouteSessionWarning";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,7 +29,8 @@ export default function RootLayout({
       <body className={`${inter.className} min-h-screen bg-background`}>
         <Providers>
           <UploadProvider>
-          <SessionWarning />
+          <PanicNotesProvider>
+            <RouteSessionWarning />
             {" "}
             {/* 🛑 Move UploadProvider here! */}
             <ChatProvider>
@@ -46,6 +50,7 @@ export default function RootLayout({
                 limit={2}
               />
             </ChatProvider>
+            </PanicNotesProvider>
           </UploadProvider>
         </Providers>
       </body>

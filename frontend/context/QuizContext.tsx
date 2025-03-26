@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
-import { dummyQuiz } from "@/lib/dummy";
 
 interface QuizQuestion {
   id: number;
@@ -79,10 +78,7 @@ export function QuizProvider({ children }: { children: React.ReactNode }) {
   const progress = ((currentQuestion + 1) / quizState.length) * 100;
 
   const handleGenerateQuiz = async (params: QuizParams) => {
-    // Here you would make your API call
-    // For now using dummy data
     console.log(params);
-    setQuizState(dummyQuiz);
     resetQuiz();
   };
 
