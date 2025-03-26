@@ -1,3 +1,5 @@
 .env
 quizzard.py
 consolidator.py
+uploaded_files
+static

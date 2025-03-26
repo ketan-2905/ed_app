@@ -110,7 +110,7 @@ export default function ChatPage() {
 
   function extractMiddle(str: string) {
     if (str.length <= 8) return ""; // If string is too short, return empty
-    return str.slice(7, -3); // Remove first 7 and last 3 characters
+    return str.slice(7, -4); // Remove first 7 and last 3 characters
 }
 
   // Auto-scroll to bottom when messages or loading state changes

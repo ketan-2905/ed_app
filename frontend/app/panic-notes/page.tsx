@@ -257,8 +257,9 @@ export default function PanicNotesPage() {
       setLoading(true);
       try {
         const data = await processDocuments(sessionId);
-        setNotes(data.consolidated_doc);
-        setTables(data.tables_doc);
+        setNotes("Notes");
+        setTables("Resources");
+        toast.success(data.message)
       } catch (error) {
         console.error("Error fetching documents:", error);
         toast.error("Failed to load documents");
@@ -308,7 +309,7 @@ export default function PanicNotesPage() {
               <div className="mt-4 flex gap-2 justify-end">
                 <Button variant="outline" size="sm" onClick={() => handleDownload("notes")}>
                   <Download className="w-4 h-4 mr-2" />
-                  Download PDF
+                  Download Notes
                 </Button>
               </div>
             </div>
@@ -321,7 +322,7 @@ export default function PanicNotesPage() {
               <div className="mt-4 flex gap-2 justify-end">
                 <Button variant="outline" size="sm" onClick={() => handleDownload("tables")}>
                   <Download className="w-4 h-4 mr-2" />
-                  Download PDF
+                  Download Resources
                 </Button>
               </div>
             </div>

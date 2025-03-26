@@ -4,45 +4,6 @@ interface QueryResponse {
     response: string;
 }
 
-// export const uploadFiles = async (
-//   files: File[],
-//   sessionId: string | undefined,
-//   onProgress: (progress: number) => void // New callback for progress updates
-// ) => {
-//   const formData = new FormData();
-//   files.forEach((file) => formData.append("files", file));
-
-//   try {
-//     const response = await apiClient.post("/upload", formData, {
-//       headers: {
-//         "Content-Type": "multipart/form-data",
-//         "X-Session-ID": sessionId || "",
-//       },
-//       onUploadProgress: (event) => {
-//         if (event.total) {
-//           const progress = Math.round((event.loaded / event.total) * 100);
-//           onProgress(progress); // Update progress bar
-//         }
-//       },
-//     });
-
-//     if (!response.data || !response.data.files || !response.data.session_id) {
-//       throw new Error("Invalid response format from server");
-//     }
-
-//     return {
-//       files: response.data.files.map((file: any) => ({
-//         id: file.id,
-//         name: file.name,
-//       })),
-//       session_id: response.data.session_id,
-//     };
-//   } catch (error: any) {
-//     console.error("File upload failed:", error.response?.data || error.message);
-//     throw new Error(error.response?.data?.message || "File upload failed. Please try again.");
-//   }
-// };
-
 export const uploadFiles = async (
   files: File[],
   sessionId: string | undefined
@@ -140,7 +101,7 @@ export const processDocuments = async (sessionId: string): Promise<{
   }
 
   try {
-    const response = await apiClient.post(`/api/process/${sessionId}`);
+    const response = await apiClient.post(`/process/${sessionId}`);
 
     if (!response.data || !response.data.status) {
       throw new Error("Invalid response format from server.");
@@ -162,7 +123,7 @@ export const downloadFile = async (
   }
 
   try {
-    const response = await apiClient.get(`/api/download/${sessionId}/${fileType}`, {
+    const response = await apiClient.get(`/download/${sessionId}/${fileType}`, {
       responseType: "blob", // Ensures the file is downloaded as a blob
     });
 
@@ -173,3 +134,21 @@ export const downloadFile = async (
   }
 };
 
+export const logoutUser = async (sessionId: string): Promise<void> => {
+  if (!sessionId) {
+    throw new Error("Session ID is required.");
+  }
+
+  alert("Logout")
+
+  try {
+    const response = await apiClient.post("/logout", {
+      session_id: sessionId,
+    });
+
+    console.log(response.data.message);
+  } catch (error: any) {
+    console.error("Logout failed:", error.response?.data || error.message);
+    throw new Error(error.response?.data?.error || "Failed to log out.");
+  }
+};

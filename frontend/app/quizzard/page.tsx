@@ -1,5 +1,6 @@
 "use client";
 
+import { useTheme } from 'next-themes';
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import {
@@ -35,8 +36,6 @@ import EmptyState from "@/components/shared/EmptyState";
 import { generateQuiz } from "@/lib/api";
 
 import Loader from "@/components/shared/QuizLoader";
-import SelectFiles from "@/components/shared/SelectFiles";
-import RouteSessionWarning from "@/components/RouteSessionWarning";
 
 
 // Custom tooltip with improved styling
@@ -106,6 +105,7 @@ export default function QuizPage() {
   const [quizStartTime, setQuizStartTime] = useState<number>(Date.now());
   const { sessionId } = useUpload();
   const [isGenerating, setIsGenerating] = useState(false)
+  const {theme} = useTheme()
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -391,7 +391,7 @@ export default function QuizPage() {
                               <Cell
                                 key={`cell-${index}`}
                                 fill={entry.isCorrect ? "#4CAF50" : "#F44336"} // Green for correct, red for incorrect
-                                stroke="#fff" // White border
+                                stroke={theme === "dark" ? "#000":"#fff"} // White border
                                 strokeWidth={1} // Thin border (1px)
                               />
                             ))}

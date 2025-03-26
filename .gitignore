@@ -8,7 +8,7 @@ frontend/.next/
 backend/.venv/
 backend/__pycache__/
 backend/*.pyc
-backend/uploaded_files/
+backend/
 backend/static/
 
 # OS-specific
